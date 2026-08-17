@@ -1,0 +1,13 @@
+.gml-renderer {
+  --color-text: #20242b;
+  --color-text-secondary: #4f5968;
+  --ark-ink: #171a1f;
+  --ark-line: #c8cdd5;
+  --ark-signal: #ffd400;
+  --ark-state: #0969da;
+  --ark-muted: #6b7280;
+  --ark-code-surface: #171a1f;
+  --ark-on-code: #f3f4f6;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  --font-display: Inter, 'Segoe UI', sans-serif;
+}
