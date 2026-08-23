@@ -8,8 +8,7 @@ GML
   -> Token[]
   -> core/parser.ts
   -> DocumentNode (AST)
-  -> renderer/index.vue
-  -> renderer/GmlNodeRenderer.vue
+  -> renderer/GmlNodeSelector.vue
   -> project Vue components
 ```
 
@@ -32,10 +31,11 @@ Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导
 
 ## Renderer
 
-- `index.vue`:接收 `DocumentNode`,合并默认和项目注册表,启动根节点渲染.
-- `GmlNodeRenderer.vue`:按节点 `type` 分发,并递归渲染元素的 children.
-- `renderer.ts`:属性白名单,参数读取,`trim` 指令和未知标签统计.
-- `registry.ts`:标签名到 Vue 组件的默认映射.
+- `GmlNodeSelector.vue`:接收统一的 `GmlNode`,在单个组件实例中合并注册表和扁平化参数,
+  再通过普通渲染函数递归遍历 AST 并生成 Vue VNode. `DocumentNode` 也是 `GmlNode` 的一种,
+  因此文档和单节点走同一个入口.
+- `renderer.ts`:对象展开,属性传递,参数读取和未知标签统计.
+- `registry.ts`:标签名到 Vue 组件的默认映射,所有属性由组件自行处理.
 - `components/`:默认标签组件,最常被项目替换或修改.
 - `theme.css`:默认 CSS 变量,不包含业务应用的全局样式.
 
@@ -49,13 +49,16 @@ Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导
 | `comment`   | 不显示                                        |
 | `element`   | 查注册表并创建 Vue 组件,然后递归渲染 children |
 
-未注册元素采用透明容器策略:忽略外层标签,但继续显示其 children,并在文档末尾汇总
-未知标签.
+未注册元素采用透明容器策略:忽略外层标签,但继续显示其 children. 默认组件不显示未知
+标签汇总. 开发者可以调用 `collectTags` 自行设计提示内容和展示位置.
+
+页面参数中的普通对象会在渲染入口自动展开为下划线名称,例如 `user.name` 对应 `user_name`.
+数组不会展开,会作为完整值传给组件.
 
 ## 安全边界
 
 - 默认渲染器不用 `v-html`.
-- 只有注册表 `attributes` 白名单中的属性会进入组件.
+- 元素的全部属性都会传给对应组件,组件自行校验和过滤.
 - 动态参数只按完整键名读取,不执行表达式,函数或嵌套路径.
 - 默认链接和图片组件会过滤 URL 协议.
 - 自定义组件接收数据后仍需自行验证 URL,样式,事件和复杂对象.

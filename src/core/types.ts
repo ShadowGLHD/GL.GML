@@ -34,13 +34,14 @@ export interface Token {
   range: SourceRange
 }
 
+/** GML AST 节点类型 */
+export type GmlNode = DocumentNode | ElementNode | TextNode | ParameterNode | CommentNode | CodeNode
+
 // 根节点
 export interface DocumentNode {
   type: 'document'
   children: GmlNode[]
 }
-
-export type GmlNode = ElementNode | TextNode | ParameterNode | CommentNode | CodeNode
 
 export interface ElementNode {
   type: 'element'

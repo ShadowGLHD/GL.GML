@@ -1,5 +1,4 @@
 <script setup lang="ts">
-/** name 来自 registry.ts 允许通过的同名 GML 属性。 */
 defineProps<{
   name?: string
 }>()

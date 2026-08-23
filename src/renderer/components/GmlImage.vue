@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-/** 这些 Props 由 registry.ts 从 <image> 的属性白名单转换得到。 */
 const props = defineProps<{
-  source: string
+  source?: string
   alt?: string
   caption?: string
   width?: number
@@ -11,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const safeSource = computed(() => {
-  const source = props.source.trim()
+  const source = props.source?.trim() ?? ''
   // 只允许站内相对路径和 http(s)，阻止文档把任意协议传给真实 img。
   if (/^(https?:\/\/|\/|\.\.?\/)/.test(source)) return source
   return ''

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-/** ordered 已由注册表从 GML 字符串 "true" 转换成 boolean。 */
-defineProps<{
-  ordered?: boolean
-}>()
+import { computed } from 'vue'
+
+const props = defineProps<{ ordered?: string | boolean }>()
+const orderedList = computed(() => props.ordered === true || props.ordered === 'true')
 </script>
 
 <!-- GML <list> 的默认组件：ordered=true 使用 ol，否则使用 ul。 -->
 <template>
-  <component :is="ordered ? 'ol' : 'ul'" class="gml-list"><slot /></component>
+  <component :is="orderedList ? 'ol' : 'ul'" class="gml-list"><slot /></component>
 </template>
 
 <style scoped>

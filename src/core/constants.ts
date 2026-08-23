@@ -1,6 +1,3 @@
-/** <code> 独占行书写时, 是否移除代码正文首尾各一个排版换行 */
-export const TRIM_CODE_BOUNDARY_NEWLINES = true
-
 /** 是否将合法注释写入 AST */
 export const PRESERVE_COMMENTS = false
 

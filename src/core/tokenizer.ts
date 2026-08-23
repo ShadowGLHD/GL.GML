@@ -1,4 +1,3 @@
-import { TRIM_CODE_BOUNDARY_NEWLINES } from './constants'
 import { errorManager } from './errors'
 import { isGmlName, isGmlChar, isSpaceChar } from './validate'
 import type { SourcePosition, Token, TokenType } from './types'
@@ -122,9 +121,12 @@ export class GmlTokenizer {
       this.tokens.push(this.token('SELF_CLOSE', '/>', start, this.position()))
       this.leaveTag(false)
     } else if (this.current() === '>') {
+      const openingTag = this.tagStatus === 'opening'
+      const rawCode = this.tagStatus === 'opening' && this.tagName === 'code'
       this.advance()
       this.tokens.push(this.token('END_TAG', '>', start, this.position()))
-      this.leaveTag(this.tagStatus === 'opening' && this.tagName === 'code')
+      if (openingTag) this.skipLineBreak()
+      this.leaveTag(rawCode)
     } else if (this.current() === '=') {
       this.advance()
       this.tokens.push(this.token('EQUALS', '=', start, this.position()))
@@ -215,23 +217,6 @@ export class GmlTokenizer {
       value = parts.join('')
     }
 
-    // 代码块围栏两侧的一个换行属于排版，不属于代码正文。
-    if (TRIM_CODE_BOUNDARY_NEWLINES) {
-      const trimStart = value.startsWith('\r\n')
-        ? 2
-        : value[0] === '\r' || value[0] === '\n'
-          ? 1
-          : 0
-      let trimEnd = value.length
-
-      if (trimEnd > trimStart) {
-        if (trimEnd - trimStart >= 2 && value.endsWith('\r\n')) trimEnd -= 2
-        else if (value[trimEnd - 1] === '\r' || value[trimEnd - 1] === '\n') trimEnd -= 1
-      }
-
-      if (trimStart > 0 || trimEnd < value.length) value = value.slice(trimStart, trimEnd)
-    }
-
     // 手动补充 </code>的结束 Token
     this.advance(codeEnd - this.offset)
     this.tokens.push(this.token('RAW_CODE', value, codeStart, this.position()))
@@ -267,6 +252,12 @@ export class GmlTokenizer {
     this.mode = rawCode ? 'raw-code' : 'text'
     this.tagStatus = null
     this.tagName = null
+  }
+
+  /** 跳过开始标签后紧邻的一个 CRLF、LF 或 CR. */
+  private skipLineBreak(): void {
+    if (this.startsWith('\r\n')) this.advance(2)
+    else if (this.current() === '\r' || this.current() === '\n') this.advance()
   }
 
   private token(type: TokenType, value: string, start: SourcePosition, end: SourcePosition): Token {

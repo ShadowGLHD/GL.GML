@@ -10,35 +10,27 @@ import ProjectImage from './ProjectImage.vue'
 import type { GmlComponentRegistry } from '@gl/gml/vue'
 
 export const projectRegistry: GmlComponentRegistry = {
-  image: {
-    component: ProjectImage,
-    attributes: ['source', 'alt'],
-  },
+  image: ProjectImage,
 }
 ```
 
 ```vue
-<GmlRenderer :document="document" :registry="projectRegistry" />
+<GmlNodeSelector :node="document" :registry="projectRegistry" />
 ```
 
-自定义注册表会覆盖同名默认定义.标签名大小写敏感.
+自定义注册表会覆盖同名默认定义.标签名大小写敏感. 组件会接收元素的全部属性, 由组件自己
+通过 `defineProps` 决定需要哪些属性和类型.
 
 ## 增加新标签
 
 1. 在 `renderer/components` 创建 Vue 组件.
 2. 在 `renderer/registry.ts` 注册标签名.
-3. 明确列出允许进入组件的属性.
-4. 必要时使用 `transformAttributes` 做类型转换和校验.
+3. 在组件中声明需要的 Props.
+4. 在组件中完成类型转换和校验.
 5. 在 Playground 中验证正常值, 缺失值和危险值.
 
 ```ts
-notice: {
-  component: GmlNotice,
-  attributes: ['level'],
-  transformAttributes: (attributes) => ({
-    level: attributes.level === 'warning' ? 'warning' : 'info',
-  }),
-}
+notice: GmlNotice
 ```
 
 ## 修改默认视觉样式
@@ -57,14 +49,24 @@ notice: {
 
 ## 改变节点渲染规则
 
-`GmlNodeRenderer.vue` 是递归分发中心.可以在这里改变参数缺失策略,未知标签策略,节点
-包装方式或插槽行为.`renderer.ts` 适合放无副作用,可单测的数据转换逻辑.
+`GmlNodeSelector.vue` 是单组件渲染入口.其中的普通渲染函数负责递归遍历 AST,可以在这里
+改变参数缺失策略,未知标签策略,节点包装方式或插槽行为.`renderer.ts` 适合放无副作用,
+可单独验证的数据转换逻辑.
+
+页面参数中的普通对象会在渲染入口自动展开:
+
+```ts
+{ user: { name: 'Alice', age: 5 }, rows: [{ id: 1 }] }
+```
+
+可以在 GML 中使用 `{{ user_name }}` 和 `{{ user_age }}`. 数组 `rows` 保持完整值,可通过
+`:items="rows"` 传给组件.
 
 若修改 AST 形状,应同时更新:
 
 - `core/types.ts`
 - `core/parser.ts`
-- `renderer/GmlNodeRenderer.vue`
+- `renderer/GmlNodeSelector.vue`
 - `renderer/renderer.ts`
 - Playground 示例和 `docs/GML_REFERENCE.md`
 

@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-/** level 已由注册表转换成 number，这里仍设置默认值以便组件单独使用。 */
 const props = withDefaults(
   defineProps<{
-    level?: number
+    level?: number | string
   }>(),
-  { level: 2 },
+  { level: '2' },
 )
 
-// 将任意数字限制在 HTML 合法的 h1 到 h6 范围内。
-const tag = computed(() => `h${Math.min(6, Math.max(1, Math.trunc(props.level)))}`)
+const tag = computed(() => {
+  const level = Number(props.level)
+  return `h${Math.min(6, Math.max(1, Number.isFinite(level) ? Math.trunc(level) : 2))}`
+})
 </script>
 
 <!-- GML <heading level="N"> 的默认组件：根据 level 动态选择 HTML 标题元素。 -->

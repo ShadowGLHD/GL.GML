@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-/** href、title 和 target 均来自注册表中的属性白名单。 */
+/** Link properties are validated before they reach the anchor element. */
 const props = defineProps<{
   href?: string
   title?: string

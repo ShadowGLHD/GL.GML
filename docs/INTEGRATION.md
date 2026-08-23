@@ -20,7 +20,7 @@ npx --yes degit ShadowGLHD/GL.GML/src src/lib/gml
 
 ```ts
 import { parseGml, GmlSyntaxError } from '@gl/gml'
-import { GmlRenderer, defaultGmlRegistry } from '@gl/gml/vue'
+import { GmlNodeSelector, defaultGmlRegistry } from '@gl/gml/vue'
 import '@gl/gml/renderer/theme.css'
 ```
 
@@ -60,7 +60,7 @@ TypeScript:
 
 ```ts
 import { parseGml } from '@gl/gml'
-import { GmlRenderer } from '@gl/gml/vue'
+import { GmlNodeSelector } from '@gl/gml/vue'
 ```
 
 该配置将 `@gl/gml` 映射到目标项目中的 `src/lib/gml`.
@@ -71,7 +71,7 @@ import { GmlRenderer } from '@gl/gml/vue'
 <script setup lang="ts">
 import { computed } from 'vue'
 import { parseGml, GmlSyntaxError } from '@gl/gml'
-import { GmlRenderer } from '@gl/gml/vue'
+import { GmlNodeSelector } from '@gl/gml/vue'
 
 const props = defineProps<{ source: string }>()
 
@@ -88,7 +88,7 @@ const state = computed(() => {
 </script>
 
 <template>
-  <GmlRenderer v-if="state.document" :document="state.document" />
+  <GmlNodeSelector v-if="state.document" :node="state.document" />
   <p v-else role="alert">{{ state.error?.message }}</p>
 </template>
 ```

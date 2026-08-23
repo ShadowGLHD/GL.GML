@@ -10,6 +10,9 @@
 开始和结束标签名称必须完全一致,名称大小写敏感.默认最大嵌套深度由
 `core/constants.ts` 中的 `MAX_NESTING_DEPTH` 控制.
 
+非自闭合开始标签 `>` 后紧邻的一个 CRLF、LF 或 CR 会由 Tokenizer 直接跳过.结束标签前
+的换行属于正文并予以保留.
+
 ## 静态属性
 
 ```gml
@@ -27,15 +30,16 @@
 ```
 
 冒号属性产生 `BindingAttributeNode`.引号中的内容是参数名称,不是 JavaScript
-表达式.只有注册表白名单允许的属性才会传给组件.
+表达式.所有属性都会传给组件,由组件自行决定如何处理.
 
 ## 文本参数
 
 ```gml
-你好,{{ username }}
+你好,{{ user_name }}
 ```
 
-合法占位符产生 `ParameterNode`.渲染器从 `parameters.username` 读取值.普通文本和
+合法占位符产生 `ParameterNode`.渲染器从一级参数 `user_name` 读取值.页面传入的普通
+对象会自动展开,例如 `{ user: { name: 'Alice' } }` 可以使用 `{{ user_name }}`.普通文本和
 `<code>` 正文不会在渲染阶段再次识别占位符.
 
 ## 注释
@@ -55,19 +59,8 @@ const value = 1 < 10
 </code>
 ```
 
-小写 `<code>` 的正文产生 `CodeNode`,内部标签和参数语法不会继续解析.是否裁剪代码
-边界各一个排版换行由 `TRIM_CODE_BOUNDARY_NEWLINES` 控制.
-
-## `trim` 渲染指令
-
-```gml
-<paragraph trim>
-正文
-</paragraph>
-```
-
-`trim` 只影响渲染副本中首尾文本节点各一个换行,不修改 Parser 返回的 AST,也不会作为
-Prop 传给业务组件.
+小写 `<code>` 的正文产生 `CodeNode`,内部标签和参数语法不会继续解析.它使用与普通元素
+相同的开始标签换行规则,结束标签前的换行属于代码正文并予以保留.
 
 ## 转义与错误
 
