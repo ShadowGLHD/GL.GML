@@ -9,6 +9,8 @@ npm install
 npm run check
 ```
 
+`npm run check` 会依次执行 TypeScript 类型检查、Vitest 回归测试和 Playground 生产构建。
+
 提交前还应运行 Playground, 验证复制入口, 类型, 样式和交互均可工作.
 
 ## 修改原则

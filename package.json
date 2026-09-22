@@ -9,21 +9,23 @@
   },
   "scripts": {
     "type-check": "vue-tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
     "dev:playground": "vite --config vite.playground.config.ts",
     "build:playground": "vite build --config vite.playground.config.ts",
     "preview:playground": "vite preview --config vite.playground.config.ts",
     "format": "prettier --write src playground docs .github *.md *.json *.ts",
-    "check": "npm run type-check && npm run build:playground"
+    "check": "npm run type-check && npm run test && npm run build:playground"
   },
   "peerDependencies": {
     "vue": "^3.5.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.3",
     "@types/node": "^24.0.0",
+    "@vitejs/plugin-vue": "^6.0.3",
     "prettier": "^3.7.4",
     "typescript": "~5.9.3",
     "vite": "^7.3.0",
+    "vitest": "^5.0.1",
     "vue": "^3.5.26",
     "vue-tsc": "^3.2.1"
   }

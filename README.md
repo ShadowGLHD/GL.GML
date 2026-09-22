@@ -93,9 +93,6 @@ npm run check
 npm run dev:playground
 ```
 
-生产构建使用 `vite.playground.config.ts`, 默认部署路径为 `/GL.GML/`, 适配 GitHub Pages
-项目站点. 页面不使用路由, 因此不会出现刷新子路径导致的 404.
-
 ## 文档
 
 - [架构与数据流](docs/ARCHITECTURE.md)

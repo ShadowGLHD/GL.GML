@@ -15,17 +15,16 @@ GML
 `core` 不导入 Vue,也不知道任何业务标签对应哪个组件.`renderer` 只通过 `core` 的公共
 入口读取 AST 类型和校验函数.因此项目可以保留 Core,只替换整个渲染层.
 
-仓库中的 `playground` 是独立的单页面演示入口,直接引用 `src`,不会复制第二份 Core 或
-Renderer.它同时用于人工验证源码编辑,参数解析,AST 输出和组件渲染.
+仓库中的 `playground` 是独立的单页面演示入口,直接引用 `src`,不会复制第二份 Core 或 Renderer. 它同时用于人工验证源码编辑, 参数解析, AST 输出和组件渲染
 
 ## Core
 
-- `tokenizer.ts`:扫描字符,产生带源码位置的 Token.
-- `parser.ts`:递归下降解析,生成 AST 并检查嵌套,属性与闭合标签.
-- `types.ts`:Token,AST 节点和稳定错误码.
-- `errors.ts`:集中构造 `GmlSyntaxError`.
-- `validate.ts`:GML 名称和字符校验.
-- `constants.ts`:Tokenizer 与 Parser 的默认行为常量.
+- `tokenizer.ts`: 扫描字符,产生带源码位置的 Token.
+- `parser.ts`: 递归下降解析,生成 AST 并检查嵌套,属性与闭合标签.
+- `types.ts`: Token, AST 节点和稳定错误码.
+- `errors.ts`: 集中构造 `GmlSyntaxError`.
+- `validate.ts`: GML 名称和字符校验.
+- `constants.ts`: Tokenizer 与 Parser 的默认行为常量.
 
 Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导出它.
 
@@ -57,8 +56,8 @@ Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导
 
 ## 安全边界
 
-- 默认渲染器不用 `v-html`.
-- 元素的全部属性都会传给对应组件,组件自行校验和过滤.
-- 动态参数只按完整键名读取,不执行表达式,函数或嵌套路径.
-- 默认链接和图片组件会过滤 URL 协议.
-- 自定义组件接收数据后仍需自行验证 URL,样式,事件和复杂对象.
+- 默认渲染器不用 `v-html`
+- 元素的全部属性都会传给对应组件,组件自行校验和过滤
+- 动态参数只按完整键名读取,不执行表达式,函数或嵌套路径
+- 默认链接和图片组件会过滤 URL 协议
+- 自定义组件接收数据后仍需自行验证 URL,样式,事件和复杂对象

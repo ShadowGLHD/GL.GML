@@ -35,19 +35,21 @@ export interface Token {
 }
 
 /** GML AST 节点类型 */
-export type GmlNode = DocumentNode | ElementNode | TextNode | ParameterNode | CommentNode | CodeNode
+export type GmlNode = DocumentNode | GmlChildNode
+
+export type GmlChildNode = ElementNode | TextNode | ParameterNode | CommentNode | CodeNode
 
 // 根节点
 export interface DocumentNode {
   type: 'document'
-  children: GmlNode[]
+  children: GmlChildNode[]
 }
 
 export interface ElementNode {
   type: 'element'
   name: string
   attributes: AttributeNode[]
-  children: GmlNode[]
+  children: GmlChildNode[]
   range: SourceRange
 }
 

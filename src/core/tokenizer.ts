@@ -125,7 +125,11 @@ export class GmlTokenizer {
       const rawCode = this.tagStatus === 'opening' && this.tagName === 'code'
       this.advance()
       this.tokens.push(this.token('END_TAG', '>', start, this.position()))
-      if (openingTag) this.skipLineBreak()
+      // 跳过开始标签后紧邻的一个 CRLF、LF 或 CR
+      if (openingTag) {
+        if (this.startsWith('\r\n')) this.advance(2)
+        else if (this.current() === '\r' || this.current() === '\n') this.advance()
+      }
       this.leaveTag(rawCode)
     } else if (this.current() === '=') {
       this.advance()
@@ -246,18 +250,12 @@ export class GmlTokenizer {
   }
 
   /** 离开标签
-   * @param rawCode true 代码模式|false 文本模式
+   * @param rawCode true 代码模式 | false 文本模式
    */
   private leaveTag(rawCode: boolean): void {
     this.mode = rawCode ? 'raw-code' : 'text'
     this.tagStatus = null
     this.tagName = null
-  }
-
-  /** 跳过开始标签后紧邻的一个 CRLF、LF 或 CR. */
-  private skipLineBreak(): void {
-    if (this.startsWith('\r\n')) this.advance(2)
-    else if (this.current() === '\r' || this.current() === '\n') this.advance()
   }
 
   private token(type: TokenType, value: string, start: SourcePosition, end: SourcePosition): Token {

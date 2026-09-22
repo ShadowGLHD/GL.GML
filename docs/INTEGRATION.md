@@ -2,9 +2,9 @@
 
 ## 前提
 
-- 目标项目使用 Vue 3 和 TypeScript.
-- 目标项目已经安装 Vue.
-- 建议使用 Node.js 20.19+ 或 22.12+.
+- 目标项目使用 Vue 3 和 TypeScript
+- 目标项目已经安装 Vue
+- 建议使用 Node.js 20.19+ 或 22.12+
 
 ## 使用 degit 复制 GML
 
@@ -12,9 +12,9 @@
 npx --yes degit ShadowGLHD/GL.GML/src src/lib/gml
 ```
 
-`degit` 从 `ShadowGLHD/GL.GML` 获取 `src` 目录的文件快照. 它不创建子模块, 也不保留
-模板仓库的 Git 关联. 目标目录必须为空或不存在, 避免覆盖项目修改. 复制后的整个目录
-应提交到目标项目, 后续修改与模板仓库互不影响.
+`degit` 从 `ShadowGLHD/GL.GML` 获取 `src` 目录的文件快照. 它不创建子模块, 也不保留模板仓库的 Git 关联. 
+
+目标目录必须为空或不存在, 避免覆盖项目修改
 
 ## 导入入口
 
@@ -101,9 +101,4 @@ const state = computed(() => {
 import '@gl/gml/renderer/theme.css'
 ```
 
-随后由项目全局样式提供组件中使用的变量, 或直接修改复制后的组件样式.
-
-## 非 Vue 项目
-
-只复制 `src/core` 和 `src/index.ts` 即可. Core 是纯 TypeScript, 不依赖 DOM 或 Vue.
-渲染器需要由目标框架根据 `GmlNode` 自行实现.
+随后由项目全局样式提供组件中使用的变量, 或直接修改组件样式

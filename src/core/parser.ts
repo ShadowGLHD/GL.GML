@@ -2,9 +2,9 @@ import type {
   AttributeNode,
   CodeNode,
   CommentNode,
+  GmlChildNode,
   DocumentNode,
   ElementNode,
-  GmlNode,
   ParameterNode,
   SourcePosition,
   TextNode,
@@ -34,7 +34,7 @@ export class GmlParser {
 
   /** 文档解析入口, 持续解析顶层节点, 直到 EOF */
   parseDocument(): DocumentNode {
-    const children: GmlNode[] = []
+    const children: GmlChildNode[] = []
 
     while (!this.check('EOF')) {
       const node = this.parseNode()
@@ -49,7 +49,7 @@ export class GmlParser {
   }
 
   /** 处理当前位置节点, 处理完成后游标停在下一个节点前 */
-  private parseNode(): GmlNode | null {
+  private parseNode(): GmlChildNode | null {
     const token = this.peek()
 
     switch (token.type) {
@@ -141,7 +141,7 @@ export class GmlParser {
     }
 
     this.consume('END_TAG', (position) => errorManager.missOpenTagEnd(position, nameToken.value))
-    const children: GmlNode[] = []
+    const children: GmlChildNode[] = []
 
     while (!this.check('CLOSE_TAG')) {
       // 到达 EOF 仍没有 </当前标签>, 说明当前元素未闭合
