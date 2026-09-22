@@ -15,7 +15,7 @@ export const projectRegistry: GmlComponentRegistry = {
 ```
 
 ```vue
-<GmlNodeSelector :node="document" :registry="projectRegistry" />
+<GmlRenderer :gml="document" :registry="projectRegistry" />
 ```
 
 自定义注册表会覆盖同名默认定义.标签名大小写敏感. 组件会接收元素的全部属性, 由组件自己
@@ -49,7 +49,7 @@ notice: GmlNotice
 
 ## 改变节点渲染规则
 
-`GmlNodeSelector.vue` 是单组件渲染入口.其中的普通渲染函数负责递归遍历 AST,可以在这里
+`GmlRenderer.vue` 是单组件渲染入口.其中的普通渲染函数负责递归遍历 AST,可以在这里
 改变参数缺失策略,未知标签策略,节点包装方式或插槽行为.`renderer.ts` 适合放无副作用,
 可单独验证的数据转换逻辑.
 
@@ -66,7 +66,7 @@ notice: GmlNotice
 
 - `core/types.ts`
 - `core/parser.ts`
-- `renderer/GmlNodeSelector.vue`
+- `renderer/GmlRenderer.vue`
 - `renderer/renderer.ts`
 - Playground 示例和 `docs/GML_REFERENCE.md`
 

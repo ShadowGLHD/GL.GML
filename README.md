@@ -25,7 +25,7 @@ git commit -m "添加项目本地 GML"
 <script setup lang="ts">
 import { computed } from 'vue'
 import { parseGml } from '@gl/gml'
-import { GmlNodeSelector } from '@gl/gml/vue'
+import { GmlRenderer } from '@gl/gml/vue'
 import '@gl/gml/renderer/theme.css'
 
 const source = '<paragraph>你好, {{ name }}</paragraph>'
@@ -33,7 +33,7 @@ const document = computed(() => parseGml(source))
 </script>
 
 <template>
-  <GmlNodeSelector :node="document" :parameters="{ name: 'World' }" />
+  <GmlRenderer :gml="document" :parameters="{ name: 'World' }" />
 </template>
 ```
 
@@ -65,7 +65,7 @@ resolve: {
 
 ```ts
 import { parseGml } from '@gl/gml'
-import { GmlNodeSelector } from '@gl/gml/vue'
+import { GmlRenderer } from '@gl/gml/vue'
 import '@gl/gml/renderer/theme.css'
 ```
 

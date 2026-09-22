@@ -8,7 +8,7 @@ GML
   -> Token[]
   -> core/parser.ts
   -> DocumentNode (AST)
-  -> renderer/GmlNodeSelector.vue
+  -> renderer/GmlRenderer.vue
   -> project Vue components
 ```
 
@@ -30,7 +30,7 @@ Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导
 
 ## Renderer
 
-- `GmlNodeSelector.vue`:接收统一的 `GmlNode`,在单个组件实例中合并注册表和扁平化参数,
+- `GmlRenderer.vue`:接收统一的 `GmlNode`,在单个组件实例中合并注册表和扁平化参数,
   再通过普通渲染函数递归遍历 AST 并生成 Vue VNode. `DocumentNode` 也是 `GmlNode` 的一种,
   因此文档和单节点走同一个入口.
 - `renderer.ts`:对象展开,属性传递,参数读取和未知标签统计.

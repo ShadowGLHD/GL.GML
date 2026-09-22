@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { GmlSyntaxError, parseGml } from '../src'
-import { collectTags, defaultGmlRegistry, GmlNodeSelector } from '../src/vue'
+import { collectTags, defaultGmlRegistry, GmlRenderer } from '../src/vue'
 import '../src/renderer/theme.css'
 
 /** Playground 示例由 GML 源码和对应的页面参数组成. */
@@ -183,12 +183,10 @@ function resetExample(): void {
 
         <!-- 渲染视图将 DocumentNode 和页面参数交给统一节点选择器. -->
         <div v-else class="preview-canvas">
-          <GmlNodeSelector
-            v-if="parsed.document"
-            :node="parsed.document"
+          <GmlRenderer
+            :gml="parsed.document"
             :parameters="parametersState.value"
           />
-          <p v-else class="empty-state">输入有效 GML 后将在此处渲染.</p>
         </div>
 
         <!-- 未知标签不会阻断渲染, 这里只提供可选的开发诊断信息. -->
