@@ -30,9 +30,8 @@ Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导
 
 ## Renderer
 
-- `GmlRenderer.vue`:接收统一的 `GmlNode`,在单个组件实例中合并注册表和扁平化参数,
-  再通过普通渲染函数递归遍历 AST 并生成 Vue VNode. `DocumentNode` 也是 `GmlNode` 的一种,
-  因此文档和单节点走同一个入口.
+- `GmlRenderer.vue`:接收 GML 源字符串并在组件内部通过 Core 解析.组件随后在单个实例中
+  合并注册表和扁平化参数,再通过普通渲染函数递归遍历 AST 并生成 Vue VNode.
 - `renderer.ts`:对象展开,属性传递,参数读取和未知标签统计.
 - `registry.ts`:标签名到 Vue 组件的默认映射,所有属性由组件自行处理.
 - `components/`:默认标签组件,最常被项目替换或修改.
@@ -43,13 +42,13 @@ Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导
 | AST 节点    | 默认处理                                      |
 | ----------- | --------------------------------------------- |
 | `text`      | 输出字面文本,不再次解析参数                   |
-| `parameter` | 从扁平 `parameters` 对象精确读取名称          |
+| `parameter` | 从扁平 `params` 对象精确读取名称              |
 | `code`      | 原样输出,不进行参数替换                       |
 | `comment`   | 不显示                                        |
 | `element`   | 查注册表并创建 Vue 组件,然后递归渲染 children |
 
-未注册元素采用透明容器策略:忽略外层标签,但继续显示其 children. 默认组件不显示未知
-标签汇总. 开发者可以调用 `collectTags` 自行设计提示内容和展示位置.
+未注册元素采用透明容器策略:忽略外层标签,但继续显示其 children. `GmlRenderer` 会通过
+`debug` 事件返回未知标签汇总,供开发环境或业务诊断界面展示.
 
 页面参数中的普通对象会在渲染入口自动展开为下划线名称,例如 `user.name` 对应 `user_name`.
 数组不会展开,会作为完整值传给组件.

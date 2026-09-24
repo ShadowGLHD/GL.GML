@@ -1,9 +1,15 @@
 import type { DocumentNode, ElementNode, GmlNode, ParameterNode } from '../core'
-import type { GmlComponentRegistry, GmlRenderParameters } from './types'
+import type { GmlRegistry, GmlParams } from './types'
 
 /** 将嵌套普通对象展开为一级参数, 数组和其他值保持原样. */
-export function flatten(parameters: GmlRenderParameters): GmlRenderParameters {
+export function flatten(parameters: GmlParams): GmlParams {
   const result: Record<string, unknown> = {}
+
+  function isPlainObject(value: unknown): value is Record<string, unknown> {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
+    const prototype = Object.getPrototypeOf(value)
+    return prototype === Object.prototype || prototype === null
+  }
 
   function visit(value: unknown, prefix: string): void {
     if (isPlainObject(value)) {
@@ -20,16 +26,10 @@ export function flatten(parameters: GmlRenderParameters): GmlRenderParameters {
   return result
 }
 
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
-  const prototype = Object.getPrototypeOf(value)
-  return prototype === Object.prototype || prototype === null
-}
-
 /** 将 ElementNode 的属性转换为组件 Props. */
 export function getProps(
   node: ElementNode,
-  parameters: GmlRenderParameters = {},
+  parameters: GmlParams = {},
 ): Record<string, unknown> {
   const attributes: Record<string, unknown> = {}
 
@@ -52,7 +52,7 @@ export function getProps(
  * 解析 ParameterNode 的页面参数。
  * 普通 TextNode 永远不会进入这里，也不会被再次解释为参数语法。
  */
-export function getParameter(node: ParameterNode, parameters: GmlRenderParameters = {}): string {
+export function getParameter(node: ParameterNode, parameters: GmlParams = {}): string {
   if (!hasParameter(node.name, parameters)) return ''
 
   const resolved = parameters[node.name]
@@ -69,14 +69,14 @@ export function getParameter(node: ParameterNode, parameters: GmlRenderParameter
 }
 
 /** 按完整参数名读取值, 不执行表达式或嵌套路径访问. */
-function hasParameter(name: string, parameters: GmlRenderParameters): boolean {
+function hasParameter(name: string, parameters: GmlParams): boolean {
   return Object.prototype.hasOwnProperty.call(parameters, name)
 }
 
 /**
  * 在真正渲染前遍历整棵 AST, 统计当前注册表不支持的标签
  */
-export function collectTags(document: DocumentNode, registry: GmlComponentRegistry): string[] {
+export function collectTags(document: DocumentNode, registry: GmlRegistry): string[] {
   const tags = new Set<string>()
 
   for (const child of document.children) collectFromNode(child, registry, tags)
@@ -84,7 +84,7 @@ export function collectTags(document: DocumentNode, registry: GmlComponentRegist
   return Array.from(tags).sort((a, b) => a.localeCompare(b))
 }
 
-function collectFromNode(node: GmlNode, registry: GmlComponentRegistry, tags: Set<string>): void {
+function collectFromNode(node: GmlNode, registry: GmlRegistry, tags: Set<string>): void {
   // 文本、注释和原始代码没有标签名，不参与注册表检查。
   if (node.type !== 'element') return
 

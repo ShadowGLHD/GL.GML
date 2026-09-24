@@ -23,19 +23,18 @@ git commit -m "添加项目本地 GML"
 
 ```vue
 <script setup lang="ts">
-import { computed } from 'vue'
-import { parseGml } from '@gl/gml'
 import { GmlRenderer } from '@gl/gml/vue'
 import '@gl/gml/renderer/theme.css'
 
 const source = '<paragraph>你好, {{ name }}</paragraph>'
-const document = computed(() => parseGml(source))
 </script>
 
 <template>
-  <GmlRenderer :gml="document" :parameters="{ name: 'World' }" />
+  <GmlRenderer :gml="source" :params="{ name: 'World' }" />
 </template>
 ```
+
+`GmlRenderer` 会在内部解析传入的 GML 源字符串.
 
 ### 配置 `@gl/gml` 导入名
 
@@ -64,7 +63,6 @@ resolve: {
 之后即可写成:
 
 ```ts
-import { parseGml } from '@gl/gml'
 import { GmlRenderer } from '@gl/gml/vue'
 import '@gl/gml/renderer/theme.css'
 ```

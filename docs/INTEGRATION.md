@@ -19,7 +19,6 @@ npx --yes degit ShadowGLHD/GL.GML/src src/lib/gml
 ## 导入入口
 
 ```ts
-import { parseGml, GmlSyntaxError } from '@gl/gml'
 import { GmlRenderer, defaultGmlRegistry } from '@gl/gml/vue'
 import '@gl/gml/renderer/theme.css'
 ```
@@ -59,7 +58,6 @@ TypeScript:
 配置后可以使用:
 
 ```ts
-import { parseGml } from '@gl/gml'
 import { GmlRenderer } from '@gl/gml/vue'
 ```
 
@@ -69,28 +67,22 @@ import { GmlRenderer } from '@gl/gml/vue'
 
 ```vue
 <script setup lang="ts">
-import { computed } from 'vue'
-import { parseGml, GmlSyntaxError } from '@gl/gml'
 import { GmlRenderer } from '@gl/gml/vue'
 
 const props = defineProps<{ source: string }>()
-
-const state = computed(() => {
-  try {
-    return { document: parseGml(props.source), error: null }
-  } catch (error) {
-    return {
-      document: null,
-      error: error instanceof GmlSyntaxError ? error : new Error('GML parse failed'),
-    }
-  }
-})
 </script>
 
 <template>
-  <GmlRenderer :gml="state.document" />
-  <p v-if="state.error" role="alert">{{ state.error.message }}</p>
+  <GmlRenderer :gml="props.source" />
 </template>
+```
+
+`GmlRenderer` 会在内部调用 Core 解析源码,并通过 `debug` 事件返回诊断数组.
+没有诊断信息时事件值为空数组 `[]`.
+需要自定义诊断界面时,可以监听该事件:
+
+```vue
+<GmlRenderer :gml="props.source" @debug="handleDebug" />
 ```
 
 ## 不使用默认主题

@@ -7,15 +7,15 @@
 
 ```ts
 import ProjectImage from './ProjectImage.vue'
-import type { GmlComponentRegistry } from '@gl/gml/vue'
+import type { GmlRegistry } from '@gl/gml/vue'
 
-export const projectRegistry: GmlComponentRegistry = {
+export const projectRegistry: GmlRegistry = {
   image: ProjectImage,
 }
 ```
 
 ```vue
-<GmlRenderer :gml="document" :registry="projectRegistry" />
+<GmlRenderer :gml="source" :registry="projectRegistry" />
 ```
 
 自定义注册表会覆盖同名默认定义.标签名大小写敏感. 组件会接收元素的全部属性, 由组件自己
@@ -53,7 +53,7 @@ notice: GmlNotice
 改变参数缺失策略,未知标签策略,节点包装方式或插槽行为.`renderer.ts` 适合放无副作用,
 可单独验证的数据转换逻辑.
 
-页面参数中的普通对象会在渲染入口自动展开:
+`params` 中的普通对象会在渲染入口自动展开:
 
 ```ts
 { user: { name: 'Alice', age: 5 }, rows: [{ id: 1 }] }
@@ -76,11 +76,11 @@ notice: GmlNotice
 <list :items="rows" :visible="shown" />
 ```
 
-渲染器只读取:
+渲染器只读取 `params` 中的值:
 
 ```ts
-parameters.rows
-parameters.shown
+params.rows
+params.shown
 ```
 
 不会解析 `user.name`,`fn()` 或 `count + 1`.如果项目需要表达式,请先设计受控表达式

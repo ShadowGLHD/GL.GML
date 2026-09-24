@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { GmlSyntaxError, parseGml } from '../src'
-import { collectTags, defaultGmlRegistry, GmlRenderer } from '../src/vue'
+import { GmlRenderer, type GmlDebug } from '../src/vue'
 import '../src/renderer/theme.css'
 
 /** Playground 示例由 GML 源码和对应的页面参数组成. */
@@ -11,7 +11,7 @@ interface PlaygroundExample {
   parameters: Record<string, unknown>
 }
 
-/** 内置示例覆盖基础渲染, 嵌套节点, 动态属性和未知标签. */
+/** 示例代码 */
 const examples: PlaygroundExample[] = [
   {
     name: '基础标签',
@@ -54,9 +54,10 @@ const selectedExample = ref(0)
 const source = ref(examples[0].source)
 const parametersInput = ref(JSON.stringify(examples[0].parameters, null, 2))
 const showAst = ref(false)
+const debugInfo = ref<GmlDebug[]>([])
 const repositoryUrl = import.meta.env.VITE_REPOSITORY_URL || 'https://github.com/'
 
-// GML 输入变化后立即重新解析, 并保留可供页面展示的解析错误.
+// AST 仅供 Playground 检查解析结果, 不参与 GmlRenderer 的实际渲染流程
 const parsed = computed(() => {
   try {
     return { document: parseGml(source.value), error: null }
@@ -81,14 +82,17 @@ const parametersState = computed(() => {
   }
 })
 
-// 工具栏统一展示当前最优先的解析错误或参数错误.
-const currentError = computed(() => parsed.value.error?.message ?? parametersState.value.error)
+// 工具栏统一展示当前最优先的解析错误或参数错误
+const currentError = computed(() =>
+  debugInfo.value.find((item) => item.level === 'error')?.message ?? parametersState.value.error,
+)
 
-// 未知标签统计独立于渲染流程, 返回去重并排序后的标签名称.
-const unsupported = computed(() => {
-  if (!parsed.value.document) return []
-  return collectTags(parsed.value.document, defaultGmlRegistry)
-})
+const warnings = computed(() => debugInfo.value.filter((item) => item.level === 'warning'))
+
+/** 接收渲染器统一返回的解析错误和未知标签信息. */
+function handleDebug(info: GmlDebug[]): void {
+  debugInfo.value = info
+}
 
 /** 加载指定示例, 同步更新源码和参数输入框. */
 function loadExample(index: number): void {
@@ -131,12 +135,12 @@ function resetExample(): void {
       </label>
       <button type="button" @click="resetExample">重置当前示例</button>
       <span class="status" :class="{ 'status-error': currentError }">
-        {{ currentError ? 'NEEDS ATTENTION' : parsed.document ? 'PARSED / RENDERED' : 'WAITING' }}
+        {{ currentError ? 'NEEDS ATTENTION' : 'PARSED / RENDERED' }}
       </span>
     </section>
 
     <section class="workspace">
-      <!-- 左侧输入区: GML 源码和传给渲染器的页面参数. -->
+      <!-- 左侧输入区: GML 源码和传给渲染器的页面参数 -->
       <div class="input-stack">
         <article class="panel editor-panel">
           <div class="panel-heading">
@@ -163,7 +167,7 @@ function resetExample(): void {
         </article>
       </div>
 
-      <!-- 右侧输出区: 在 AST 数据和真实组件渲染结果之间切换. -->
+      <!-- 右侧输出区: 在 AST 数据和真实组件渲染结果之间切换 -->
       <article class="panel preview-panel">
         <div class="panel-heading">
           <div>
@@ -175,35 +179,39 @@ function resetExample(): void {
           </button>
         </div>
 
-        <!-- AST 视图便于开发者检查 Parser 生成的节点结构. -->
+        <!-- AST 面板只用于 Playground 调试, 由页面单独解析源码. -->
         <div v-if="showAst" class="ast-view">
           <pre v-if="parsed.document">{{ JSON.stringify(parsed.document, null, 2) }}</pre>
           <p v-else class="empty-state">解析失败, 暂无 AST.</p>
         </div>
 
-        <!-- 渲染视图将 DocumentNode 和页面参数交给统一节点选择器. -->
+        <!-- 实际渲染始终将源码交给 GmlRenderer, 由组件内部完成解析. -->
         <div v-else class="preview-canvas">
           <GmlRenderer
-            :gml="parsed.document"
-            :parameters="parametersState.value"
+            :gml="source"
+            :params="parametersState.value"
+            @debug="handleDebug"
           />
         </div>
 
         <!-- 未知标签不会阻断渲染, 这里只提供可选的开发诊断信息. -->
-        <aside v-if="unsupported.length > 0" class="unsupported-box" role="status">
-          <strong>UNSUPPORTED TAGS ({{ unsupported.length }})</strong>
+        <aside v-if="warnings.length > 0" class="unsupported-box" role="status">
+          <strong>WARNINGS ({{ warnings.length }})</strong>
           <span>
-            <template v-for="(tag, index) in unsupported" :key="tag">
-              <code>{{ tag }}</code
-              ><template v-if="index < unsupported.length - 1">, </template>
+            <template v-for="warning in warnings" :key="`${warning.code}:${warning.message}`">
+              {{ warning.message }}
             </template>
           </span>
         </aside>
 
         <!-- GML 解析错误属于源码和输出流程, 因此保留在右侧结果区. -->
-        <div v-if="parsed.error" class="error-box" role="alert">
+        <div v-if="debugInfo.some((item) => item.level === 'error')" class="error-box" role="alert">
           <strong>GML ERROR</strong>
-          <span>{{ parsed.error.message }}</span>
+          <span>
+            <template v-for="error in debugInfo.filter((item) => item.level === 'error')" :key="`${error.code}:${error.message}`">
+              {{ error.message }}
+            </template>
+          </span>
         </div>
       </article>
     </section>

@@ -9,14 +9,14 @@ import GmlParagraph from './components/GmlParagraph.vue'
 import GmlSection from './components/GmlSection.vue'
 import GmlStrong from './components/GmlStrong.vue'
 import GmlTitle from './components/GmlTitle.vue'
-import type { GmlComponentRegistry } from './types'
+import type { GmlRegistry } from './types'
 
 /**
- * 内置标签注册表。
+ * 内置标签注册表
  *
- * 每个键对应一个大小写敏感的 GML 标签. 项目可以用自己的组件覆盖同名定义.
+ * 每个键对应一个大小写敏感的 GML 标签. 项目可以用自己的组件覆盖同名定义
  */
-export const defaultGmlRegistry: GmlComponentRegistry = Object.freeze({
+export const defaultGmlRegistry: GmlRegistry = Object.freeze({
   title: GmlTitle,
   section: GmlSection,
   heading: GmlHeading,

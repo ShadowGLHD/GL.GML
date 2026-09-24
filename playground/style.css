@@ -195,8 +195,7 @@ textarea:focus {
   font-size: 12px;
 }
 
-.preview-canvas,
-.ast-view {
+.preview-canvas {
   min-height: 490px;
   padding: 24px;
   background: #fff;
@@ -204,8 +203,11 @@ textarea:focus {
 }
 
 .ast-view {
+  min-height: 490px;
   overflow: auto;
+  padding: 24px;
   background: #fbfcfe;
+  color: #243044;
 }
 
 .ast-view pre {
