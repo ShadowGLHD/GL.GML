@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { collectTags, flatten, getParameter, getProps } from '../src/renderer/renderer'
+import { collectTags, flatten, getParams, getProps } from '../src/renderer/renderer'
 import type { DocumentNode, ElementNode } from '../src/core'
 
 describe('renderer helpers', () => {
@@ -12,7 +12,7 @@ describe('renderer helpers', () => {
   })
 
   it('resolves parameters and dynamic attributes by exact key', () => {
-    expect(getParameter({ type: 'parameter', name: 'user_name', range: {} as never }, { user_name: 'Alice' })).toBe(
+    expect(getParams({ type: 'parameter', name: 'user_name', range: {} as never }, { user_name: 'Alice' })).toBe(
       'Alice',
     )
 

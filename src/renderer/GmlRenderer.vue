@@ -8,13 +8,12 @@ import {
   type GmlNode,
 } from '../core'
 import { defaultGmlRegistry } from './registry'
-import { collectTags, flatten, getParameter, getProps } from './renderer'
+import { collectTags, flatten, getParams, getProps } from './renderer'
 import type { GmlRegistry, GmlDebug, GmlParams } from './types'
 
 /** 内部解析状态；解析失败时不会保留不完整的 AST */
 type ParseState =
-  | { document: DocumentNode; error: null }
-  | { document: null; error: GmlSyntaxError }
+  { document: DocumentNode; error: null } | { document: null; error: GmlSyntaxError }
 
 /**
  * 一次渲染过程中所有节点共享的上下文
@@ -47,8 +46,8 @@ function renderNode(node: GmlNode, state: RenderState): VNodeChild {
       return node.value
 
     case 'parameter':
-      // 参数的缺失值、空值及不支持的复杂值由 getParameter 统一转换为空字符串。
-      return getParameter(node, state.parameters)
+      // 参数的缺失值、空值及不支持的复杂值由 getParams 统一转换为空字符串。
+      return getParams(node, state.parameters)
 
     case 'comment':
       // 注释保留在 AST 中供分析工具使用，但不会生成可见 DOM。
@@ -141,19 +140,21 @@ export default defineComponent({
     // 调试信息由同一次解析结果产生，避免调用方为了错误或未知标签再次解析 GML。
     const debugInfo = computed<GmlDebug[]>(() => {
       if (parsed.value.error) {
-        return [{
-          level: 'error',
-          code: parsed.value.error.code,
-          message: parsed.value.error.message,
-        }]
+        return [
+          {
+            level: 'error',
+            code: parsed.value.error.code,
+            message: parsed.value.error.message,
+          },
+        ]
       }
 
       const unsupportedTags = collectTags(parsed.value.document, registry.value)
       return unsupportedTags.map((tag) => ({
-          level: 'warning',
-          code: 'UNSUPPORTED_TAG',
-          message: `发现未注册标签: ${tag}`,
-        }))
+        level: 'warning',
+        code: 'UNSUPPORTED_TAG',
+        message: `发现未注册标签: ${tag}`,
+      }))
     })
 
     // 源码或注册表变化后统一通知调用方；params 不影响解析诊断，因此不会触发该事件。

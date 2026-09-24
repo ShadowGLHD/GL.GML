@@ -1,18 +1,17 @@
 import type { DocumentNode, ElementNode, GmlNode, ParameterNode } from '../core'
 import type { GmlRegistry, GmlParams } from './types'
 
-/** 将嵌套普通对象展开为一级参数, 数组和其他值保持原样. */
+/** 将嵌套普通对象展开为一级参数, 数组和其他值保持原样 */
 export function flatten(parameters: GmlParams): GmlParams {
   const result: Record<string, unknown> = {}
 
-  function isPlainObject(value: unknown): value is Record<string, unknown> {
-    if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
-    const prototype = Object.getPrototypeOf(value)
-    return prototype === Object.prototype || prototype === null
-  }
-
   function visit(value: unknown, prefix: string): void {
-    if (isPlainObject(value)) {
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+    ) {
       for (const [key, child] of Object.entries(value)) {
         visit(child, prefix ? `${prefix}_${key}` : key)
       }
@@ -26,11 +25,8 @@ export function flatten(parameters: GmlParams): GmlParams {
   return result
 }
 
-/** 将 ElementNode 的属性转换为组件 Props. */
-export function getProps(
-  node: ElementNode,
-  parameters: GmlParams = {},
-): Record<string, unknown> {
+/** 解析属性值 */
+export function getProps(node: ElementNode, parameters: GmlParams = {}): Record<string, unknown> {
   const attributes: Record<string, unknown> = {}
 
   // 所有 AST 属性都传给组件, 由组件自行声明和处理 Props.
@@ -48,11 +44,8 @@ export function getProps(
   return attributes
 }
 
-/**
- * 解析 ParameterNode 的页面参数。
- * 普通 TextNode 永远不会进入这里，也不会被再次解释为参数语法。
- */
-export function getParameter(node: ParameterNode, parameters: GmlParams = {}): string {
+/** 解析参数值 */
+export function getParams(node: ParameterNode, parameters: GmlParams = {}): string {
   if (!hasParameter(node.name, parameters)) return ''
 
   const resolved = parameters[node.name]

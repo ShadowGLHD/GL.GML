@@ -4,5 +4,5 @@
  */
 export { default as GmlRenderer } from './GmlRenderer.vue'
 export { defaultGmlRegistry } from './registry'
-export { collectTags, flatten, getParameter, getProps } from './renderer'
+export { collectTags, flatten, getParams, getProps } from './renderer'
 export type { GmlRegistry, GmlDebug, GmlParams } from './types'
