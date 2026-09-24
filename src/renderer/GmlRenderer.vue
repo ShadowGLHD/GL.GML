@@ -83,12 +83,7 @@ function renderElement(node: ElementNode, state: RenderState): VNodeChild {
   )
 }
 
-/**
- * GML 的 Vue 渲染入口。
- *
- * `gml` 接收 GML 文档源码，并在渲染函数中通过 core 的 parseGml 转换为 AST，因此调用方
- * 无需再维护单独的解析步骤。
- */
+/** GML 渲染入口 */
 export default defineComponent({
   name: 'GmlRenderer',
   emits: {
@@ -138,7 +133,7 @@ export default defineComponent({
     })
 
     // 调试信息由同一次解析结果产生，避免调用方为了错误或未知标签再次解析 GML。
-    const debugInfo = computed<GmlDebug[]>(() => {
+    const debug = computed<GmlDebug[]>(() => {
       if (parsed.value.error) {
         return [
           {
@@ -149,16 +144,15 @@ export default defineComponent({
         ]
       }
 
-      const unsupportedTags = collectTags(parsed.value.document, registry.value)
-      return unsupportedTags.map((tag) => ({
+      return collectTags(parsed.value.document, registry.value).map((tag) => ({
         level: 'warning',
         code: 'UNSUPPORTED_TAG',
         message: `发现未注册标签: ${tag}`,
       }))
     })
 
-    // 源码或注册表变化后统一通知调用方；params 不影响解析诊断，因此不会触发该事件。
-    watch(debugInfo, (info) => emit('debug', info), { immediate: true })
+    // 源码或注册表变化后统一通知调用方
+    watch(debug, (info) => emit('debug', info), { immediate: true })
 
     // 返回渲染函数，使 AST 可以直接递归转换为 VNode，而不需要中间模板结构。
     return () => {
@@ -181,7 +175,7 @@ export default defineComponent({
 
 <style scoped>
 .gml-renderer {
-  /* 允许渲染器作为 flex/grid 子项时收缩，避免长内容撑破父级布局 */
+  /* 允许渲染器作为 flex/grid 子项时收缩, 避免长内容撑破父级布局 */
   min-width: 0;
   color: var(--color-text);
   /* 保留 GML 文本中的换行和连续空格, 同时仍允许在需要时自动换行 */
