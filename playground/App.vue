@@ -4,11 +4,11 @@ import { GmlSyntaxError, parseGml } from '../src'
 import { GmlRenderer, type GmlDebug } from '../src/vue'
 import '../src/renderer/theme.css'
 
-/** Playground 示例由 GML 源码和对应的页面参数组成. */
+/** Playground 示例模型 */
 interface PlaygroundExample {
   name: string
   source: string
-  parameters: Record<string, unknown>
+  params: Record<string, unknown>
 }
 
 /** 示例代码 */
@@ -18,7 +18,7 @@ const examples: PlaygroundExample[] = [
     source: `<title>GML Playground</title>
 <paragraph>你好, {{ user_name }}. 这里是 <strong>GL.GML</strong> 的实时预览.</paragraph>
 <link href="https://github.com/">查看 GitHub</link>`,
-    parameters: { user: { name: '开发者' } },
+    params: { user: { name: '开发者' } },
   },
   {
     name: '嵌套内容',
@@ -30,7 +30,7 @@ const examples: PlaygroundExample[] = [
     <item>Renderer 将 AST 映射为 Vue 组件</item>
   </list>
 </section>`,
-    parameters: {},
+    params: {},
   },
   {
     name: '动态属性与代码',
@@ -38,33 +38,34 @@ const examples: PlaygroundExample[] = [
 <code language="typescript">
 const answer = 40 + 2
 </code>`,
-    parameters: { imageUrl: '/missing-image.webp' },
+    params: { imageUrl: '/missing-image.webp' },
   },
   {
     name: '未知标签',
     source: `<FuturePanel>
   <paragraph>未注册的外层标签会透明渲染 children.</paragraph>
 </FuturePanel>`,
-    parameters: {},
+    params: {},
   },
 ]
 
-// 当前编辑状态. 切换示例时会同时替换 GML 和参数 JSON.
+// 当前编辑状态, 切换示例时会同时替换 GML 和参数 JSON
 const selectedExample = ref(0)
 const source = ref(examples[0].source)
-const parametersInput = ref(JSON.stringify(examples[0].parameters, null, 2))
+const params = ref(JSON.stringify(examples[0].params, null, 2))
 const showAst = ref(false)
-const debugInfo = ref<GmlDebug[]>([])
-const repositoryUrl = import.meta.env.VITE_REPOSITORY_URL || 'https://github.com/'
+const debug = ref<GmlDebug[]>([])
+const lineNumbers = computed(() => source.value.split('\n').length)
+const lineNumberGutter = ref<HTMLElement | null>(null)
 
-// AST 仅供 Playground 检查解析结果, 不参与 GmlRenderer 的实际渲染流程
+// 解析为 AST 方便查看
 const parsed = computed(() => {
   try {
     return { document: parseGml(source.value), error: null }
   } catch (error) {
     return {
       document: null,
-      error: error instanceof GmlSyntaxError ? error : new Error('Unexpected parser failure'),
+      error: error instanceof GmlSyntaxError ? error : new Error('未知的解析异常'),
     }
   }
 })
@@ -72,40 +73,48 @@ const parsed = computed(() => {
 // 参数编辑器数据处理
 const parametersState = computed(() => {
   try {
-    const value: unknown = JSON.parse(parametersInput.value)
+    const value: unknown = JSON.parse(params.value)
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return { value: {}, error: '参数必须是 JSON 对象' }
     }
     return { value: value as Record<string, unknown>, error: null }
   } catch {
-    return { value: {}, error: '参数 JSON 格式无效.' }
+    return { value: {}, error: '参数 JSON 格式无效' }
   }
 })
 
 // 工具栏统一展示当前最优先的解析错误或参数错误
-const currentError = computed(() =>
-  debugInfo.value.find((item) => item.level === 'error')?.message ?? parametersState.value.error,
+const currentError = computed(
+  () => debug.value.find((item) => item.level === 'error')?.message ?? parametersState.value.error,
 )
 
-const warnings = computed(() => debugInfo.value.filter((item) => item.level === 'warning'))
+const warnings = computed(() => debug.value.filter((item) => item.level === 'warning'))
 
 /** 接收渲染器统一返回的解析错误和未知标签信息. */
 function handleDebug(info: GmlDebug[]): void {
-  debugInfo.value = info
+  debug.value = info
 }
 
-/** 加载指定示例, 同步更新源码和参数输入框. */
+/** 加载指定示例, 同步更新源码和参数输入框 */
 function loadExample(index: number): void {
   const example = examples[index]
   if (!example) return
   selectedExample.value = index
   source.value = example.source
-  parametersInput.value = JSON.stringify(example.parameters, null, 2)
+  params.value = JSON.stringify(example.params, null, 2)
 }
 
-/** 恢复当前选中示例的初始内容. */
+/** 恢复当前选中示例的初始内容 */
 function resetExample(): void {
   loadExample(selectedExample.value)
+}
+
+/** 保持源码行号与编辑区的垂直滚动位置一致. */
+function syncLineNumbers(event: Event): void {
+  const textarea = event.currentTarget as HTMLTextAreaElement
+  if (lineNumberGutter.value) {
+    lineNumberGutter.value.scrollTop = textarea.scrollTop
+  }
 }
 </script>
 
@@ -117,7 +126,9 @@ function resetExample(): void {
         <h1>GML Renderer Lab</h1>
         <p class="intro">编辑 GML, 观察 Tokenizer, Parser 与 Vue Renderer 的实时结果.</p>
       </div>
-      <a :href="repositoryUrl" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      <a href="https://github.com/ShadowGLHD/GL.GML" target="_blank" rel="noopener noreferrer"
+        >GitHub ↗</a
+      >
     </header>
 
     <!-- 示例切换, 内容重置和当前解析状态. -->
@@ -150,10 +161,22 @@ function resetExample(): void {
             </div>
             <span class="panel-meta">{{ source.length }} chars</span>
           </div>
-          <textarea v-model="source" spellcheck="false" aria-label="GML input" />
+          <div class="code-editor">
+            <div ref="lineNumberGutter" class="line-numbers" aria-hidden="true">
+              <span v-for="line in lineNumbers" :key="line">{{ line }}</span>
+            </div>
+            <textarea
+              v-model="source"
+              class="gml-input"
+              wrap="off"
+              spellcheck="false"
+              aria-label="GML input"
+              @scroll="syncLineNumbers"
+            />
+          </div>
         </article>
 
-        <article class="panel parameters-panel">
+        <article class="panel params-panel">
           <div class="panel-heading">
             <div>
               <span class="panel-kicker">02 / PARAMETERS</span>
@@ -163,7 +186,9 @@ function resetExample(): void {
               {{ parametersState.error }}
             </span>
           </div>
-          <textarea v-model="parametersInput" spellcheck="false" aria-label="Page parameters" />
+          <div class="params-editor">
+            <textarea v-model="params" spellcheck="false" aria-label="Page params" />
+          </div>
         </article>
       </div>
 
@@ -179,46 +204,49 @@ function resetExample(): void {
           </button>
         </div>
 
-        <!-- AST 面板只用于 Playground 调试, 由页面单独解析源码. -->
+        <!-- AST 面板只用于 Playground 调试, 由页面单独解析源码 -->
         <div v-if="showAst" class="ast-view">
           <pre v-if="parsed.document">{{ JSON.stringify(parsed.document, null, 2) }}</pre>
-          <p v-else class="empty-state">解析失败, 暂无 AST.</p>
+          <p v-else class="empty-state">解析失败, 暂无 AST</p>
         </div>
 
         <!-- 实际渲染始终将源码交给 GmlRenderer, 由组件内部完成解析. -->
         <div v-else class="preview-canvas">
-          <GmlRenderer
-            :gml="source"
-            :params="parametersState.value"
-            @debug="handleDebug"
-          />
+          <GmlRenderer :gml="source" :params="parametersState.value" @debug="handleDebug" />
         </div>
 
-        <!-- 未知标签不会阻断渲染, 这里只提供可选的开发诊断信息. -->
-        <aside v-if="warnings.length > 0" class="unsupported-box" role="status">
-          <strong>WARNINGS ({{ warnings.length }})</strong>
-          <span>
-            <template v-for="warning in warnings" :key="`${warning.code}:${warning.message}`">
-              {{ warning.message }}
-            </template>
-          </span>
-        </aside>
+        <div
+          v-if="warnings.length > 0 || debug.some((item) => item.level === 'error')"
+          class="diagnostics"
+        >
+          <!-- 未知标签不会阻断渲染, 这里只提供可选的开发诊断信息 -->
+          <aside v-if="warnings.length > 0" class="unsupported-box" role="status">
+            <strong>WARNINGS ({{ warnings.length }})</strong>
+            <span>
+              <template v-for="warning in warnings" :key="`${warning.code}:${warning.message}`">
+                {{ warning.message }}
+              </template>
+            </span>
+          </aside>
 
-        <!-- GML 解析错误属于源码和输出流程, 因此保留在右侧结果区. -->
-        <div v-if="debugInfo.some((item) => item.level === 'error')" class="error-box" role="alert">
-          <strong>GML ERROR</strong>
-          <span>
-            <template v-for="error in debugInfo.filter((item) => item.level === 'error')" :key="`${error.code}:${error.message}`">
-              {{ error.message }}
-            </template>
-          </span>
+          <!-- GML 解析错误属于源码和输出流程, 因此保留在右侧结果区 -->
+          <div v-if="debug.some((item) => item.level === 'error')" class="error-box" role="alert">
+            <strong>GML ERROR</strong>
+            <span>
+              <template
+                v-for="error in debug.filter((item) => item.level === 'error')"
+                :key="`${error.code}:${error.message}`"
+              >
+                {{ error.message }}
+              </template>
+            </span>
+          </div>
         </div>
       </article>
     </section>
 
-    <!-- 项目归属和许可证信息. -->
+    <!-- 项目归属和许可证信息 -->
     <footer>
-      <span>Project-local Core and Renderer</span>
       <span>MIT · Copyright © ShadowGLHD</span>
     </footer>
   </main>
