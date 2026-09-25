@@ -33,17 +33,68 @@ export const projectRegistry: GmlRegistry = {
 notice: GmlNotice
 ```
 
-## 修改默认视觉样式
+## 选择颜色主题
 
-快速定制可以只覆盖 `renderer/theme.css` 中的变量:
+渲染器内置 `light` 和 `dark` 两个主题, 默认使用 `light`:
+
+```vue
+<GmlRenderer :gml="source" theme="light" />
+<GmlRenderer :gml="source" theme="dark" />
+```
+
+`theme` 是组件的公开接口。渲染器会在内部将它输出为根节点的 `data-theme` 属性,
+调用方不需要直接创建或操作该属性。
+
+### 页面专属主题
+
+主题通常只服务于特定页面时, 可以把主题 CSS 放在页面目录中并由页面组件导入:
+
+```text
+pages/Article/
+├─ ArticlePage.vue
+└─ ocean.css
+```
 
 ```css
-.gml-renderer {
-  --ark-state: #7c3aed;
-  --ark-line: #ddd6fe;
-  --font-display: 'Noto Sans SC', sans-serif;
+/* ocean.css */
+.gml-renderer[data-theme='ocean'] {
+  --color-background: #071a2b;
+  --color-text: #d8f3ff;
+  --color-text-secondary: #83a9bd;
+  --ark-ink: #e0f2fe;
+  --ark-line: #1e526d;
+  --ark-signal: #facc15;
+  --ark-state: #22d3ee;
+  --ark-muted: #7da2b5;
+  --ark-code-surface: #0b2538;
+  --ark-on-code: #e0f2fe;
+}
+
+/* 自定义主题不限于变量, 也可以修改主题范围内的组件样式。 */
+.gml-renderer[data-theme='ocean'] .gml-code {
+  border-left: 3px solid #22d3ee;
+  border-radius: 0;
 }
 ```
+
+```vue
+<!-- ArticlePage.vue -->
+<script setup lang="ts">
+import { GmlRenderer } from '@gl/gml/vue'
+import '@gl/gml/renderer/theme.css'
+import './ocean.css'
+
+const source = '<paragraph>页面专属主题</paragraph>'
+</script>
+
+<template>
+  <GmlRenderer :gml="source" theme="ocean" />
+</template>
+```
+
+不需要在项目入口导入页面专属主题, 也不需要修改 TypeScript 导出文件。若在 Vue SFC
+中直接编写主题样式, 应使用非 `scoped` 的 `<style>`; 在 `scoped` 样式中则需要通过
+`:deep(.gml-renderer[data-theme='ocean'])` 选择子组件。
 
 结构差异较大时,直接修改或替换 `renderer/components/*.vue`.
 

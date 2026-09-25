@@ -30,11 +30,13 @@ const source = '<paragraph>你好, {{ name }}</paragraph>'
 </script>
 
 <template>
-  <GmlRenderer :gml="source" :params="{ name: 'World' }" />
+  <GmlRenderer :gml="source" :params="{ name: 'World' }" theme="light" />
 </template>
 ```
 
-`GmlRenderer` 会在内部解析传入的 GML 源字符串.
+`GmlRenderer` 会在内部解析传入的 GML 源字符串
+
+`theme` 支持内置的 `light`、`dark` 以及自定义主题; 完整示例见[渲染层定制](docs/CUSTOMIZING.md)
 
 ### 配置 `@gl/gml` 导入名
 

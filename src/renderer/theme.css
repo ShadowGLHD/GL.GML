@@ -1,4 +1,5 @@
 .gml-renderer {
+  --color-background: #ffffff;
   --color-text: #20242b;
   --color-text-secondary: #4f5968;
   --ark-ink: #171a1f;
@@ -10,4 +11,21 @@
   --ark-on-code: #f3f4f6;
   --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
   --font-display: Inter, 'Segoe UI', sans-serif;
+
+  color-scheme: light;
+}
+
+.gml-renderer[data-theme='dark'] {
+  --color-background: #191f27;
+  --color-text: #d8dee9;
+  --color-text-secondary: #9ba7b7;
+  --ark-ink: #f0f3f6;
+  --ark-line: #343d49;
+  --ark-signal: #f2cc60;
+  --ark-state: #6ca8ef;
+  --ark-muted: #7f8b9b;
+  --ark-code-surface: #141a21;
+  --ark-on-code: #d8dee9;
+
+  color-scheme: dark;
 }

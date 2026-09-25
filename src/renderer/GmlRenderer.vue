@@ -9,7 +9,7 @@ import {
 } from '../core'
 import { defaultGmlRegistry } from './registry'
 import { collectTags, flatten, getParams, getProps } from './renderer'
-import type { GmlRegistry, GmlDebug, GmlParams } from './types'
+import type { GmlRegistry, GmlDebug, GmlParams, GmlTheme } from './types'
 
 /** 内部解析状态; 解析失败时不会保留不完整的 AST */
 type ParseState = {
@@ -29,6 +29,9 @@ interface RenderState {
 
   /** 已展开为下划线键名的参数表, 供正文参数和动态属性按完整名称读取 */
   params: GmlParams
+
+  /** 应用到渲染器根节点的主题名称 */
+  theme: GmlTheme
 }
 
 /** 解析 GML AST 节点为可以渲染的子节点 */
@@ -38,7 +41,7 @@ function renderNode(node: GmlNode, state: RenderState): VNodeChild {
       // 文档节点是渲染入口。统一的根元素便于外部布局，并承载本组件的作用域样式。
       return h(
         'div',
-        { class: 'gml-renderer' },
+        { class: 'gml-renderer', 'data-theme': state.theme },
         node.children.map((child) => renderNode(child, state)),
       )
 
@@ -92,6 +95,12 @@ export default defineComponent({
     gml: {
       type: String,
       default: '',
+    },
+
+    /** 内置 light、dark, 也可使用调用方通过 CSS 定义的主题名称 */
+    theme: {
+      type: String as PropType<GmlTheme>,
+      default: 'light',
     },
 
     /** 组件注册表 */
@@ -156,6 +165,7 @@ export default defineComponent({
         registry: registry.value,
         // flatten 只展开普通对象; 数组及其他值会作为完整参数保留
         params: flatten(props.params),
+        theme: props.theme,
       }
 
       return renderNode(document, state)
@@ -168,6 +178,7 @@ export default defineComponent({
 .gml-renderer {
   /* 允许渲染器作为 flex/grid 子项时收缩, 避免长内容撑破父级布局 */
   min-width: 0;
+  background: var(--color-background);
   color: var(--color-text);
   /* 保留 GML 文本中的换行和连续空格, 同时仍允许在需要时自动换行 */
   white-space: break-spaces;

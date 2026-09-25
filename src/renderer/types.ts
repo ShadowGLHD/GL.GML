@@ -5,6 +5,9 @@ export type GmlRegistry = Readonly<Record<string, Component>>
 /** 页面渲染器参数表 */
 export type GmlParams = Readonly<Record<string, unknown>>
 
+/** 渲染器主题名称 */
+export type GmlTheme = 'light' | 'dark' | (string & {})
+
 /** GML 解析及渲染过程中提供给调用方的单条诊断信息 */
 export interface GmlDebug {
   /** 当前诊断的严重级别 */
@@ -15,5 +18,4 @@ export interface GmlDebug {
 
   /** 面向诊断界面的简短说明 */
   message: string
-
 }

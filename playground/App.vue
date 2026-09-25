@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { GmlSyntaxError, parseGml } from '../src'
-import { GmlRenderer, type GmlDebug } from '../src/vue'
+import { GmlRenderer, type GmlDebug, type GmlTheme } from '../src/vue'
 import '../src/renderer/theme.css'
 
 /** Playground 示例模型 */
@@ -10,6 +10,8 @@ interface PlaygroundExample {
   source: string
   params: Record<string, unknown>
 }
+
+type ThemePreference = 'system' | 'light' | 'dark'
 
 /** 示例代码 */
 const examples: PlaygroundExample[] = [
@@ -55,8 +57,34 @@ const source = ref(examples[0].source)
 const params = ref(JSON.stringify(examples[0].params, null, 2))
 const showAst = ref(false)
 const debug = ref<GmlDebug[]>([])
+// 样式识别
+const themePreference = ref<ThemePreference>('system')
+const colorSchemeQuery =
+  typeof window === 'undefined' ? undefined : window.matchMedia('(prefers-color-scheme: dark)')
+const prefersDark = ref(colorSchemeQuery?.matches ?? false)
+
+// 行号计算和滚动同步
 const lineNumbers = computed(() => source.value.split('\n').length)
 const lineNumberGutter = ref<HTMLElement | null>(null)
+const resolvedTheme = computed<GmlTheme>(() =>
+  themePreference.value === 'system'
+    ? prefersDark.value
+      ? 'dark'
+      : 'light'
+    : themePreference.value,
+)
+
+function syncSystemTheme(event: MediaQueryListEvent | MediaQueryList): void {
+  prefersDark.value = event.matches
+}
+
+onMounted(() => {
+  colorSchemeQuery?.addEventListener('change', syncSystemTheme)
+})
+
+onUnmounted(() => {
+  colorSchemeQuery?.removeEventListener('change', syncSystemTheme)
+})
 
 // 解析为 AST 方便查看
 const parsed = computed(() => {
@@ -119,7 +147,7 @@ function syncLineNumbers(event: Event): void {
 </script>
 
 <template>
-  <main class="playground-shell">
+  <main class="playground-shell" :data-theme="resolvedTheme">
     <!-- 页面标题和仓库入口. -->
     <header class="topbar">
       <div>
@@ -142,6 +170,14 @@ function syncLineNumbers(event: Event): void {
           <option v-for="(example, index) in examples" :key="example.name" :value="index">
             {{ example.name }}
           </option>
+        </select>
+      </label>
+      <label>
+        主题
+        <select v-model="themePreference">
+          <option value="system">跟随系统</option>
+          <option value="light">浅色</option>
+          <option value="dark">深色</option>
         </select>
       </label>
       <button type="button" @click="resetExample">重置当前示例</button>
@@ -210,9 +246,14 @@ function syncLineNumbers(event: Event): void {
           <p v-else class="empty-state">解析失败, 暂无 AST</p>
         </div>
 
-        <!-- 实际渲染始终将源码交给 GmlRenderer, 由组件内部完成解析. -->
+        <!-- 实际渲染始终将源码交给 GmlRenderer, 由组件内部完成解析 -->
         <div v-else class="preview-canvas">
-          <GmlRenderer :gml="source" :params="parametersState.value" @debug="handleDebug" />
+          <GmlRenderer
+            :gml="source"
+            :params="parametersState.value"
+            :theme="resolvedTheme"
+            @debug="handleDebug"
+          />
         </div>
 
         <div
