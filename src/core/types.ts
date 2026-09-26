@@ -100,7 +100,7 @@ export interface CodeNode {
   range: SourceRange
 }
 
-/** 稳定错误码用于程序判断；面向用户的错误消息保持中文。 */
+/** 错误码 */
 export type GmlErrorCode =
   | 'INVALID_NAME'
   | 'UNEXPECTED_CHARACTER'

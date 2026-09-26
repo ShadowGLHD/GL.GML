@@ -8,6 +8,7 @@ import {
   type GmlNode,
 } from '../core'
 import { defaultGmlRegistry } from './registry'
+import { messages } from '../locales'
 import { collectTags, flatten, getParams, getProps } from './renderer'
 import type { GmlRegistry, GmlDebug, GmlParams, GmlTheme } from './types'
 
@@ -147,7 +148,7 @@ export default defineComponent({
       return collectTags(document, registry.value).map((tag) => ({
         level: 'warning',
         code: 'UNSUPPORTED_TAG',
-        message: `发现未注册标签: ${tag}`,
+        message: messages.unsupportedTag(tag),
       }))
     })
 

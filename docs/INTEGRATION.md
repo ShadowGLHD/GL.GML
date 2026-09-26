@@ -85,6 +85,25 @@ const props = defineProps<{ source: string }>()
 <GmlRenderer :gml="props.source" @debug="handleDebug" />
 ```
 
+## 选择诊断语言
+
+Core 异常和 Renderer 的未注册标签警告共用 `src/locales` 下的语言包，默认使用中文。
+复制到目标项目后，修改 `src/lib/gml/locales/index.ts` 中的导出即可选择英文：
+
+```ts
+export { messages } from './en-US'
+```
+
+使用中文时导出 `./zh-CN`。保存修改后重新构建项目；无需向解析函数或 Vue 组件传入语言参数。
+仓库内开发时，对应文件为 `src/locales/index.ts`。
+
+新增语言时，参考已有语言包创建文件，并用 `satisfies GmlMessages` 校验完整性。
+`GmlMessages` 定义在 `locales/types.ts` 中；带变量的消息使用函数，其他消息使用字符串。
+新增消息键时，需要同步补齐所有语言包。
+
+语言选择只影响诊断文案，不改变错误码、源码位置、异常类型或遇错中断解析的行为。
+Playground 页面文字不属于这套语言包。
+
 ## 不使用默认主题
 
 删除这条导入即可:

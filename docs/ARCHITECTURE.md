@@ -28,6 +28,10 @@ GML
 
 Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导出它.
 
+`locales/` 为 Core 和 Renderer 提供无框架依赖的诊断语言包。开发者通过
+`locales/index.ts` 的固定导出选择中文或英文，语言包结构由 `locales/types.ts` 约束。
+语言选择只改变文案，不参与解析流程；使用方式见 [复制与集成](INTEGRATION.md#选择诊断语言)。
+
 ## Renderer
 
 - `GmlRenderer.vue`:接收 GML 源字符串并在组件内部通过 Core 解析.组件随后在单个实例中
