@@ -14,6 +14,7 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.vue",
+    "tests/**/*.ts",
     "playground/**/*.ts",
     "playground/**/*.vue",
     "vite.playground.config.ts"

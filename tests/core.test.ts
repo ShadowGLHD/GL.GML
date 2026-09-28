@@ -28,9 +28,7 @@ describe('GML core', () => {
 
     expect(paragraph.type).toBe('element')
     if (paragraph.type !== 'element') return
-    expect(paragraph.children).toEqual([
-      expect.objectContaining({ type: 'text', value: 'body\n' }),
-    ])
+    expect(paragraph.children).toEqual([expect.objectContaining({ type: 'text', value: 'body\n' })])
   })
 
   it('keeps comments lexically isolated from markup', () => {
@@ -54,7 +52,7 @@ describe('GML core', () => {
     try {
       parseGml('<paragraph>')
     } catch (error) {
-      expect(error).toMatchObject({ code: 'UNCLOSED_TAG', line: 1, column: 2 })
+      expect(error).toMatchObject({ code: 'UNCLOSED_TAG', line: 1, column: 1, offset: 0 })
     }
   })
 })

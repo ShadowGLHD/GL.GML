@@ -9,7 +9,6 @@ describe.each([
     mismatch: '期望结束标签 </paragraph>，实际得到 </section> (1:15)',
     unclosedString: '属性值字符串未闭合 (2:6)',
     missingEof: 'GML Parser 收到的 Token 序列缺少 EOF',
-    invalidDepth: 'GML 最大嵌套层数必须是正整数，当前值：-1',
     invalidCharacter: '存在非法字符："\\n"',
     unsupportedTag: '发现未注册标签: FuturePanel',
   },
@@ -19,7 +18,6 @@ describe.each([
     mismatch: 'Expected closing tag </paragraph>, but got </section> (1:15)',
     unclosedString: 'Unclosed attribute value string (2:6)',
     missingEof: 'The token sequence received by the GML parser is missing EOF',
-    invalidDepth: 'The maximum GML nesting depth must be a positive integer; received: -1',
     invalidCharacter: 'Invalid character: "\\n"',
     unsupportedTag: 'Unregistered tag found: FuturePanel',
   },
@@ -74,10 +72,23 @@ describe.each([
     })
   })
 
-  it('preserves ordinary Error and RangeError diagnostics', async () => {
-    const { parseGmlTokens, errorManager } = await import('../src')
+  it('reports token contract errors separately from syntax errors', async () => {
+    const { parseGmlTokens, tokenizeGml, GmlSyntaxError } = await import('../src')
     expect(() => parseGmlTokens([])).toThrowError(new Error(locale.missingEof))
-    expect(() => errorManager.invalidMaxDepth(-1)).toThrowError(new RangeError(locale.invalidDepth))
+    const invalid = [...tokenizeGml(''), ...tokenizeGml('body')]
+    expect(() => parseGmlTokens(invalid)).toThrowError(
+      new Error(locale.messages.invalidTokenSequence),
+    )
+    expect(() => parseGmlTokens(invalid)).not.toThrowError(GmlSyntaxError)
+  })
+
+  it('localizes comment, code, and binding diagnostics through the public parser', async () => {
+    const { parseGml } = await import('../src')
+    expect(() => parseGml('<!--')).toThrowError(`${locale.messages.unclosedComment} (1:1)`)
+    expect(() => parseGml('<code>')).toThrowError(`${locale.messages.unclosedCode} (1:1)`)
+    expect(() => parseGml('<x :a=""/>')).toThrowError(
+      `${locale.messages.invalidParameter('')} (1:7)`,
+    )
   })
 
   it('formats control characters and unregistered tag names', () => {

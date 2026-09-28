@@ -1,18 +1,20 @@
 import type { GmlMessages } from './types'
 
 export const messages = {
-  /** UNCLOSED_TAG：标签未闭合；tagName 为含尖括号的显示名称，也可能为空或注释起始符。 */
+  /** UNCLOSED_TAG：标签未闭合；tagName 为含尖括号的显示名称，也可能为空。 */
   unclosedTag: (tagName) => `标签${tagName}未闭合`,
+  /** UNCLOSED_COMMENT：注释缺少 -->。 */
+  unclosedComment: '注释未闭合',
+  /** UNCLOSED_CODE：代码块缺少结束标签。 */
+  unclosedCode: '代码块 <code> 未闭合',
   /** UNCLOSED_STRING：属性值缺少与起始引号配对的结束引号。 */
   unclosedString: '属性值字符串未闭合',
   /** INVALID_NAME：名称中出现非法字符；JSON.stringify 使换行等不可见字符可读。 */
   invalidName: (character) => `存在非法字符：${JSON.stringify(character)}`,
-  /** UNEXPECTED_CHARACTER：属性值含不允许的字符；保留字符转义以便定位。 */
-  unexpectedCharacter: (character) => `属性值包含非法字符：${JSON.stringify(character)}`,
+  /** INVALID_PARAMETER：动态绑定的参数名为空或含非法字符。 */
+  invalidParameter: (parameter) => `参数名称无效：${JSON.stringify(parameter)}`,
   /** UNEXPECTED_TOKEN：当前节点位置无法处理该 Token；tokenType 为 Token 类型名称。 */
   unexpectedToken: (tokenType) => `无法处理的 Token：${tokenType}`,
-  /** UNEXPECTED_TOKEN：解析元素时未读到开始标签的 <。 */
-  missOpenTag: '此处应为开始标签',
   /** UNEXPECTED_TOKEN：开始标签的 < 后缺少名称。 */
   missOpenTagName: '开始标签缺少标签名',
   /** UNEXPECTED_TOKEN：开始标签的属性结束后缺少 >；tagName 不含尖括号。 */
@@ -33,8 +35,8 @@ export const messages = {
   unquotedAttribute: (attributeName) => `属性 ${attributeName} 的值必须使用引号`,
   /** 普通 Error：Parser 读不到预期的 EOF Token，表示传入的 Token 序列不完整。 */
   missingEofToken: 'GML Parser 收到的 Token 序列缺少 EOF',
-  /** RangeError：最大嵌套深度配置无效；value 保留原始值供诊断。 */
-  invalidMaxDepth: (value) => `GML 最大嵌套层数必须是正整数，当前值：${String(value)}`,
+  /** 普通 Error：EOF 提前出现或重复，表示调用方提供了无效 Token 序列。 */
+  invalidTokenSequence: 'GML Token 序列必须仅在末尾包含一个 EOF',
   /** UNSUPPORTED_TAG：Renderer 未找到标签组件；仅警告，仍渲染该标签的子节点。 */
   unsupportedTag: (tagName) => `发现未注册标签: ${tagName}`,
 } satisfies GmlMessages

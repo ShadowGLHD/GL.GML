@@ -22,11 +22,26 @@ export class GmlSyntaxError extends SyntaxError {
   }
 }
 
-/** GML 全局异常管理器 */
+/** Core 内部共享的无状态异常工厂。 */
 class GmlErrorManager {
-  /** UNCLOSED_TAG：元素、代码块或注释未闭合；tagName 为已格式化的显示名称。 */
+  /** UNCLOSED_TAG：标签未闭合；位置指向开始的 <。 */
   unclosedTag(position: SourcePosition, tagName: string): never {
     return this.raise(messages.unclosedTag(tagName), 'UNCLOSED_TAG', position)
+  }
+
+  /** 注释缺少 -->；定位到 <!-- 的 <，与普通标签未闭合区分。 */
+  unclosedComment(position: SourcePosition): never {
+    return this.raise(messages.unclosedComment, 'UNCLOSED_COMMENT', position)
+  }
+
+  /** 原始代码缺少有效结束标签；定位到 <code>，包括空正文直接到 EOF 的情况。 */
+  unclosedCode(position: SourcePosition): never {
+    return this.raise(messages.unclosedCode, 'UNCLOSED_CODE', position)
+  }
+
+  /** 显式绑定使用非法参数名；位置指向起始引号，文案保留归一化前的值以解释空白等问题。 */
+  invalidParameter(position: SourcePosition, parameter: string): never {
+    return this.raise(messages.invalidParameter(parameter), 'INVALID_PARAMETER', position)
   }
 
   /** UNCLOSED_STRING：属性值缺少结束引号；position 指向起始引号。 */
@@ -39,19 +54,9 @@ class GmlErrorManager {
     return this.raise(messages.invalidName(character), 'INVALID_NAME', position)
   }
 
-  /** UNEXPECTED_CHARACTER：报告属性值内的非法字符，文案由语言包负责转义。 */
-  unexpectedCharacter(position: SourcePosition, character: string): never {
-    return this.raise(messages.unexpectedCharacter(character), 'UNEXPECTED_CHARACTER', position)
-  }
-
   /** UNEXPECTED_TOKEN：节点解析遇到无法处理的 Token 类型。 */
   unexpectedToken(position: SourcePosition, tokenType: string): never {
     return this.raise(messages.unexpectedToken(tokenType), 'UNEXPECTED_TOKEN', position)
-  }
-
-  /** UNEXPECTED_TOKEN：元素解析入口未读到 OPEN_TAG（<）。 */
-  missOpenTag(position: SourcePosition): never {
-    return this.raise(messages.missOpenTag, 'UNEXPECTED_TOKEN', position)
   }
 
   /** UNEXPECTED_TOKEN：OPEN_TAG 后未读到标签名称。 */
@@ -104,9 +109,9 @@ class GmlErrorManager {
     throw new Error(messages.missingEofToken)
   }
 
-  /** 最大深度配置校验失败时使用；抛出 RangeError，并保留原始配置值的文字表示。 */
-  invalidMaxDepth(value: unknown): never {
-    throw new RangeError(messages.invalidMaxDepth(value))
+  /** EOF 提前或重复说明调用方传入的流结构无效，抛普通 Error，避免误当成用户语法错误。 */
+  invalidTokenSequence(): never {
+    throw new Error(messages.invalidTokenSequence)
   }
 
   /** 统一抛出语法异常：消息已由语言包生成，错误码及源码位置保持语言无关。 */

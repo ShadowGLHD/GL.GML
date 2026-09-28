@@ -1,5 +1,6 @@
-/** GML 源码中的字符位置; 行列从 1 开始, offset 从 0 开始 */
+/** 行列从 1 开始，offset 从 0 开始, offset / column 按 UTF-16 代码单元计数 */
 export interface SourcePosition {
+  /** 可直接用于 source.slice 的索引, 不按 Unicode 码点或视觉字符计数 */
   offset: number
   line: number
   column: number
@@ -56,7 +57,7 @@ export interface ElementNode {
 /** 属性节点 */
 export type AttributeNode = StaticAttributeNode | BindingAttributeNode
 
-/** 普通属性: 无值属性为 true */
+/** 普通属性, 无值属性为 true */
 export interface StaticAttributeNode {
   type: 'attribute'
   name: string
@@ -64,7 +65,7 @@ export interface StaticAttributeNode {
   range: SourceRange
 }
 
-/** 动态属性 */
+/** 动态属性, 不保存可执行表达式 */
 export interface BindingAttributeNode {
   type: 'binding'
   name: string
@@ -100,11 +101,10 @@ export interface CodeNode {
   range: SourceRange
 }
 
-/** 错误码 */
+/** 源码语法错误的稳定标识; 调用方提供无效 Token 流时抛普通 Error, 不使用此集合 */
 export type GmlErrorCode =
   | 'INVALID_NAME'
-  | 'UNEXPECTED_CHARACTER'
-  | 'UNEXPECTED_EOF'
+  | 'INVALID_PARAMETER'
   | 'UNCLOSED_STRING'
   | 'UNCLOSED_COMMENT'
   | 'UNQUOTED_ATTRIBUTE'

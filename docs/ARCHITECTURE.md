@@ -19,14 +19,30 @@ GML
 
 ## Core
 
-- `tokenizer.ts`: 扫描字符,产生带源码位置的 Token.
-- `parser.ts`: 递归下降解析,生成 AST 并检查嵌套,属性与闭合标签.
+- `tokenizer.ts`: 使用 text / tag / raw-code 状态扫描字符，产生带源码位置的 Token。
+  参数结束符按游标前进缓存，普通文本分段收集后合并，避免反复搜索或拼接。
+  原始代码只识别正文边界，结束标签复用普通标签扫描流程。
+- `parser.ts`: 递归下降解析；文档与元素共用子节点循环，嵌套深度随调用传递。
+  独立处理属性和结束标签，生成 AST 并检查嵌套、属性、参数名称与闭合标签。
 - `types.ts`: Token, AST 节点和稳定错误码.
 - `errors.ts`: 集中构造 `GmlSyntaxError`.
-- `validate.ts`: GML 名称和字符校验.
+- `tokenizer.ts` 内联字符与名称规则，并在读取动态属性字符串时检查参数名称。
+  Parser 信任 Token 的词法合法性；手工构造 Token 的调用方应保证名称和值合法。
 - `constants.ts`: Tokenizer 与 Parser 的默认行为常量.
 
 Core 的公共入口为 `core/index.ts`,模板根入口 `src/index.ts` 再次导出它.
+
+解析入口仅提供 `parseGml(source)`、`tokenizeGml(source)` 和 `parseGmlTokens(tokens)`。
+Tokenizer / Parser 类及异常工厂属于内部实现，每次函数调用使用独立状态。
+`parseGmlTokens` 接收只读 Token 数组，可重复解析同一份输入。输入必须有且仅有一个末尾 EOF；
+缺失、提前或重复的 EOF 抛出普通 `Error`，源码语法错误则抛出 `GmlSyntaxError`。
+
+本轮 Core 重构调整了公共契约：不再导出 `GmlTokenizer`、`GmlParser` 和 `errorManager`；
+动态绑定名先去除前后空白再校验；未闭合注释和代码块具有独立错误码，未闭合标签定位到 `<`。
+未使用的 `UNEXPECTED_CHARACTER`、`UNEXPECTED_EOF` 错误码和最大深度配置错误文案已移除。
+
+`npm run bench:core` 可独立测量不同长度的未闭合花括号、普通文本、转义文本及完整文档。
+基准预热后取七次运行的中位数，不把机器相关的毫秒阈值作为单元测试条件。
 
 `locales/` 为 Core 和 Renderer 提供无框架依赖的诊断语言包。开发者通过
 `locales/index.ts` 的固定导出选择中文或英文，语言包结构由 `locales/types.ts` 约束。
